@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Elements xmlns="http://schemas.microsoft.com/sharepoint/">
+    <ClientSideComponentInstance
+        Title="CpaHeader"
+        Location="ClientSideExtension.ApplicationCustomizer"
+        ComponentId="2947f66e-b572-4e2f-9c4b-675687a5a260"
+        Properties="{&quot;testMessage&quot;:&quot;Test message&quot;}">
+    </ClientSideComponentInstance>
+</Elements>

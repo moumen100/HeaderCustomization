@@ -1,0 +1,18 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/spfx-build/config.2.0.schema.json",
+  "version": "2.0",
+  "bundles": {
+    "cpa-header-application-customizer": {
+      "components": [
+        {
+          "entrypoint": "./lib/extensions/cpaHeader/CpaHeaderApplicationCustomizer.js",
+          "manifest": "./src/extensions/cpaHeader/CpaHeaderApplicationCustomizer.manifest.json"
+        }
+      ]
+    }
+  },
+  "externals": {},
+  "localizedResources": {
+    "CpaHeaderApplicationCustomizerStrings": "lib/extensions/cpaHeader/loc/{locale}.js"
+  }
+}
