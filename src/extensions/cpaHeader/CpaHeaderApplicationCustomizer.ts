@@ -39,6 +39,7 @@ export default class CpaHeaderApplicationCustomizer
     private topPlaceholder: PlaceholderContent | undefined;
     private HostUrl : string = "http://orgaplums/";
     private ListName: string = "Footer";
+    private LinksList=[];
   @override
   public onInit(): Promise<void> {
     Log.info(LOG_SOURCE, `Initialized ${strings.Title}`);
@@ -54,14 +55,10 @@ export default class CpaHeaderApplicationCustomizer
     //     customStyle.type = "text/css";
     //     head.insertAdjacentElement("beforeEnd", customStyle);
     // }
-    this._getListData(this.ListName).then(lists =>{
-        let listId = lists.value[0].Id
-        this.getListItems(listId).then(listItems=>{
-          console.log(listItems.value)
-        })
-    })
+    
     this.context.placeholderProvider.changedEvent.add(this,this.renderPlaceholders);
         console.log("HelloWorldApplicationCustomizer._renderPlaceHolders()");
+    
 
     return Promise.resolve();
   }
@@ -71,15 +68,15 @@ export default class CpaHeaderApplicationCustomizer
         return response.json();
       });
   }
+
   private async getListItems(listId:string) : Promise<ISPLISTITEM> {
 
-    return this.context.spHttpClient.get( `${this.HostUrl}/_api/Web/Lists/getbytitle('${this.ListName}')/Items?$select=ID,Title&Top='5'`, SPHttpClient.configurations.v1)
+    return this.context.spHttpClient.get( `${this.HostUrl}/_api/Web/Lists/getbytitle('${this.ListName}')/Items?$select=ID,Title,url&$Top=5`, SPHttpClient.configurations.v1)
       .then((response: SPHttpClientResponse) => {
         return response.json();
       });
-
   }
-  private renderPlaceholders():void{
+   private async renderPlaceholders():Promise<void>{
 
     console.log("HelloWorldApplicationCustomizer._renderPlaceHolders()");
      //get topPlaceholder
@@ -87,7 +84,6 @@ export default class CpaHeaderApplicationCustomizer
      {
        // tring to get topPlaceholder
        this.topPlaceholder = this.context.placeholderProvider.tryCreateContent(PlaceholderName.Top,{onDispose:this.onPlaceholderDispose})
-
       }
      //check if topPlaceholder is available to you
      if(this.topPlaceholder)
@@ -95,7 +91,16 @@ export default class CpaHeaderApplicationCustomizer
 
         if(this.topPlaceholder.domElement)
         {
-          this.topPlaceholder.domElement.innerHTML=`
+          let listname = await this._getListData(this.ListName) 
+           this.LinksList = await (await this.getListItems(listname.value[0].Id)).value
+        //   await this._getListData(this.ListName).then(lists =>{
+        //     let listId = lists.value[0].Id
+        //     this.getListItems(listId).then(listItems=>{
+        //       console.log(listItems.value)
+        //       this.LinksList = listItems.value
+        //     })
+        // })
+          let style:String = `
           <style>
 .uls {
   list-style-type: none;
@@ -128,17 +133,36 @@ export default class CpaHeaderApplicationCustomizer
 .active {
   background-color: #459F36;
 }
-</style>
+</style>`
+let Menu:String = `
 <nav class="navbar">
-<ul class="uls">
-  <li class="lis"><a href="http://sharepoint2019:100/sites/Site_BNA">Accueil </a></li>
-  <li class="lis"><a href="http://sharepoint2019:100/sites/Site_BNA/SitePages/Notre-Banque(2).aspx">Notre Banque </a></li>
-  <li class="lis"><a href="http://sharepoint2019:100/sites/DRH/SitePages/Home.aspx">Ressources Humaines</a></li>
-  <li class="lis"><a href="http://sharepoint2019:100/sites/DirCom">Direction Commerciale</a></li>
-  <li class="lis"><a href="http://sharepoint2019:100/sites/Site_BNA/SitePages/Organisation.aspx">Organisation</a></li>
+<ul class="uls">`
+if (this.LinksList.length>0) {
+  this.LinksList.forEach(Element=>{
+    Menu+=
+    `
+    <li class="lis"><a href="${Element.url}">${Element.Title} </a></li>
+    `
+  }) 
+   
+}
+else {
+  Menu+=
+    `
+  <li class="lis"><a href="#">No link data available</a></li>
+  `
+}
 
+
+
+Menu+=
+`
 </ul>
 </nav>`
+this.topPlaceholder.domElement.innerHTML = `${style}  ${Menu}`
+console.log(this.LinksList)
+
+console.log(this.topPlaceholder.domElement)
         }
      }
      else{
